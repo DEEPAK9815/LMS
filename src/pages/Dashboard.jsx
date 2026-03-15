@@ -1,46 +1,71 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../App';
 import { Route, Routes, Link, useNavigate, useLocation } from 'react-router-dom';
-import { BookOpen, UserCircle, Settings, PlusCircle, Video, Play, FileText } from 'lucide-react';
+import { getCourses, getEnrollments } from '../data/mockDb';
+import { BookOpen, UserCircle, Settings, PlusCircle, Video, Play, FileText, Compass } from 'lucide-react';
 
-const StudentDashboard = () => {
+const StudentDashboard = ({ user }) => {
   const navigate = useNavigate();
+  const [myCourses, setMyCourses] = useState([]);
+
+  useEffect(() => {
+     const allCourses = getCourses();
+     const myEnrollments = getEnrollments().filter(e => e.userId === user.id);
+     
+     const mappedCourses = myEnrollments.map(en => {
+        const course = allCourses.find(c => c.id === en.courseId);
+        return { ...course, progress: en.progress, completedCount: en.completedLessons.length };
+     });
+     setMyCourses(mappedCourses);
+  }, [user]);
+
   return (
     <div className="fade-in">
       <h2 style={{ fontSize: '2rem', marginBottom: '8px' }}>My Learning Journey</h2>
       <p style={{ color: 'var(--text-secondary)', marginBottom: '32px' }}>Pick up where you left off</p>
 
-      <div className="grid grid-cols-3">
-        {[1, 2].map((course) => (
-          <div key={course} className="glass-panel course-card" style={{ padding: '24px' }}>
-             <img 
-               src={`https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&q=80&w=400&h=250&random=${course}`} 
-               alt="Course thumbnail"
-               className="course-image"
-             />
-             <h4 style={{ fontSize: '1.2rem', marginBottom: '8px' }}>React Native Development</h4>
-             <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '16px' }}>
-               Module 3: Navigation and Routing
-             </p>
-             <div style={{ marginBottom: '16px' }}>
-               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '4px' }}>
-                 <span>Progress</span>
-                 <span>{course * 35}%</span>
+      {myCourses.length > 0 ? (
+        <div className="grid grid-cols-3">
+          {myCourses.map((course) => (
+            <div key={course.id} className="glass-panel course-card" style={{ padding: '24px' }}>
+               <img 
+                 src={course.thumbnail} 
+                 alt="Course thumbnail"
+                 className="course-image"
+               />
+               <h4 style={{ fontSize: '1.2rem', marginBottom: '8px' }}>{course.title}</h4>
+               <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '16px' }}>
+                 {course.completedCount === course.modules?.length 
+                    ? 'Course Completed!' 
+                    : `Completed ${course.completedCount} of ${course.modules?.length} Lessons`}
+               </p>
+               <div style={{ marginBottom: '16px' }}>
+                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '4px' }}>
+                   <span>Progress</span>
+                   <span>{course.progress}%</span>
+                 </div>
+                 <div className="progress-container">
+                   <div className="progress-bar" style={{ width: `${course.progress}%` }}></div>
+                 </div>
                </div>
-               <div className="progress-container">
-                 <div className="progress-bar" style={{ width: `${course * 35}%` }}></div>
-               </div>
-             </div>
-             <button 
-               className="btn btn-primary" 
-               style={{ width: '100%' }}
-               onClick={() => navigate(`/course/${course}`)}
-             >
-               <Play size={18} /> Continue Learning
-             </button>
+               <button 
+                 className="btn btn-primary" 
+                 style={{ width: '100%' }}
+                 onClick={() => navigate(`/course/${course.id}`)}
+               >
+                 <Play size={18} /> Continue Learning
+               </button>
+            </div>
+          ))}
+        </div>
+      ) : (
+          <div className="glass-panel text-center" style={{ padding: '48px', textAlign: 'center' }}>
+              <Compass size={48} color="var(--text-secondary)" style={{ margin: '0 auto 16px auto' }} />
+              <h3 style={{ fontSize: '1.5rem', marginBottom: '8px' }}>No courses enrolled yet</h3>
+              <p style={{ color: 'var(--text-secondary)', marginBottom: '24px' }}>Discover new skills and start learning today.</p>
+              <button className="btn btn-primary" onClick={() => navigate('/courses')}>Browse Catalog</button>
           </div>
-        ))}
-      </div>
+      )}
     </div>
   );
 };
@@ -147,7 +172,7 @@ const Dashboard = () => {
 
       <main className="main-content">
         <Routes>
-          <Route path="/" element={user.role === 'instructor' ? <InstructorDashboard /> : <StudentDashboard />} />
+          <Route path="/" element={user.role === 'instructor' ? <InstructorDashboard /> : <StudentDashboard user={user} />} />
           <Route path="/teaching" element={<InstructorDashboard />} />
           <Route path="/profile" element={<UserProfile />} />
           <Route path="/settings" element={<div className="glass-panel"><h3>Settings Panel</h3><p className="mt-4" style={{marginTop: '16px'}}>Manage notifications, privacy, etc.</p></div>} />

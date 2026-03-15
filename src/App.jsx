@@ -9,6 +9,11 @@ const Login = lazy(() => import('./pages/Login'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const CourseView = lazy(() => import('./pages/CourseView'));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
+const Courses = lazy(() => import('./pages/Courses'));
+const CourseDetails = lazy(() => import('./pages/CourseDetails'));
+const Payment = lazy(() => import('./pages/Payment'));
+
+import { initializeDb } from './data/mockDb';
 
 export const AuthContext = createContext();
 
@@ -17,6 +22,10 @@ export const useAuth = () => useContext(AuthContext);
 function App() {
   const [user, setUser] = useState(null); // null means not logged in
   // user object shape: { id: 1, name: 'John Doe', role: 'student' | 'instructor' | 'admin' }
+
+  React.useEffect(() => {
+    initializeDb(); // Initialize mock local storage database
+  }, []);
 
   const login = (userData) => {
     setUser(userData);
@@ -36,6 +45,8 @@ function App() {
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/login" element={<Login />} />
+              <Route path="/courses" element={<Courses />} />
+              <Route path="/course/:courseId/details" element={<CourseDetails />} />
               
               {/* --- Non-Functional Requirement: Security & RBAC --- */}
               {/* Role-Based Access Control enforcing specific routes based on user role */}
@@ -63,6 +74,14 @@ function App() {
                   </ProtectedRoute>
                 } 
               />
+              <Route 
+                path="/payment/:courseId" 
+                element={
+                  <ProtectedRoute>
+                    <Payment />
+                  </ProtectedRoute>
+                } 
+              />
             </Routes>
           </Suspense>
         </div>
@@ -84,6 +103,9 @@ const Header = () => {
       <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
         {user ? (
           <>
+            <Link to="/courses" className="btn btn-secondary">
+              <BookOpen size={18} /> Catalog
+            </Link>
             <span style={{ color: 'var(--text-secondary)' }}>Welcome, {user.name}</span>
             <Link to={user.role === 'admin' ? '/admin' : '/dashboard'} className="btn btn-secondary">
               <LayoutDashboard size={18} /> Dashboard
@@ -94,6 +116,7 @@ const Header = () => {
           </>
         ) : (
           <>
+            <Link to="/courses" className="btn btn-secondary">Courses</Link>
             <Link to="/login" className="btn btn-secondary">Login</Link>
             <Link to="/login?mode=register" className="btn btn-primary">Sign Up</Link>
           </>

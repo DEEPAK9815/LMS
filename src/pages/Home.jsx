@@ -1,8 +1,15 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { PlayCircle, Target, Users, BookOpen, Award } from 'lucide-react';
+import { getCourses } from '../data/mockDb';
 
 const Home = () => {
+  const [featured, setFeatured] = useState([]);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+     setFeatured(getCourses().slice(0, 3));
+  }, []);
   return (
     <div style={{ padding: '64px 32px', textAlign: 'center', maxWidth: '1200px', margin: '0 auto' }}>
       <header className="fade-in" style={{ marginBottom: '80px', marginTop: '40px' }}>
@@ -49,22 +56,28 @@ const Home = () => {
       </div>
       
       <section style={{ marginTop: '100px', padding: '60px 0', borderTop: '1px solid var(--glass-border)' }}>
-         <h2 style={{ fontSize: '2.5rem', marginBottom: '40px' }}>Featured Courses</h2>
+         <h2 style={{ fontSize: '2.5rem', marginBottom: '40px' }}>Featured Recommended Courses</h2>
          <div className="grid grid-cols-3 text-left">
-            {[1, 2, 3].map((item) => (
-              <div key={item} className="glass-panel course-card" style={{ padding: '24px' }}>
+            {featured.map((course) => (
+              <div key={course.id} className="glass-panel course-card" style={{ padding: '24px', cursor: 'pointer' }} onClick={() => navigate(`/course/${course.id}/details`)}>
                 <img 
-                  src={`https://images.unsplash.com/photo-1516321497487-e288fb19713f?auto=format&fit=crop&q=80&w=400&h=250&random=${item}`} 
+                  src={course.thumbnail} 
                   alt="Course Thumbnail" 
                   className="course-image" 
                 />
-                <span className="badge badge-primary py-1 mb-2 inline-block" style={{ marginBottom: '12px' }}>Web Development</span>
-                <h4 style={{ fontSize: '1.2rem', marginBottom: '8px' }}>Full-Stack Mastery {item}</h4>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '16px' }}>Master the art of building scalable web apps with modern technologies.</p>
+                {course.discount > 0 && (
+                   <span className="badge badge-warning py-1 mb-2 inline-block" style={{ marginBottom: '12px' }}>{course.discount}% OFF</span>
+                )}
+                <h4 style={{ fontSize: '1.2rem', marginBottom: '8px' }}>{course.title}</h4>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '16px' }}>
+                  {course.description.length > 70 ? course.description.substring(0, 70) + '...' : course.description}
+                </p>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto' }}>
-                  <span style={{ fontWeight: 600, color: 'var(--primary)' }}>$49.99</span>
+                  <div>
+                      <span style={{ fontWeight: 600, color: 'var(--primary)' }}>${(course.price - course.price * (course.discount||0)/100).toFixed(2)}</span>
+                  </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
-                    <BookOpen size={16} /> 12 Lessons
+                    <BookOpen size={16} /> {course.modules.length} Lessons
                   </div>
                 </div>
               </div>

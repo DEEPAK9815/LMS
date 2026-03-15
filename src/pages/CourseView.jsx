@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, PlayCircle, FileText, HelpCircle, CheckCircle } from 'lucide-react';
 
@@ -7,38 +7,45 @@ import VideoPlayer from '../modules/Content/VideoPlayer';
 import DocumentViewer from '../modules/Content/DocumentViewer';
 import QuizEngine from '../modules/Assessment/QuizEngine';
 import ProgressBar from '../modules/Progress/ProgressBar';
+import { getCourses, getUserEnrollment, updateProgress } from '../data/mockDb';
+import { useAuth } from '../App';
 
 /**
  * Main Course View Container
- * Demonstrates: Maintainability, Modular Code, Data Integrity 
  */
 const CourseView = () => {
   const { courseId } = useParams();
-  const [activeLesson, setActiveLesson] = useState(0);
+  const { user } = useAuth();
+  
+  const [course, setCourse] = useState(null);
+  const [enrollment, setEnrollment] = useState(null);
+  const [activeLessonIndex, setActiveLessonIndex] = useState(0);
 
-  // Simulated Database/State Management with 'Data Integrity'
-  const [lessons, setLessons] = useState([
-    { id: 0, type: 'video', title: 'Introduction to the Course', duration: '5:30', completed: true },
-    { id: 1, type: 'video', title: 'Core Concepts Explained', duration: '12:45', completed: true },
-    { id: 2, type: 'document', title: 'Setup Guide & Materials', duration: 'Read', completed: false, downloadable: true },
-    { id: 3, type: 'video', title: 'Advanced Methods', duration: '18:20', completed: false },
-    { id: 4, type: 'quiz', title: 'Module 1 Assessment', duration: '10 mins', completed: false,
-      question: 'Which of the following is NOT a valid concept?',
-      options: ['Abstraction', 'Encapsulation', 'Reiteration', 'Polymorphism'],
-      answer: 2
+  useEffect(() => {
+    const allCourses = getCourses();
+    const currCourse = allCourses.find(c => c.id === courseId);
+    setCourse(currCourse);
+    if(currCourse && user) {
+        setEnrollment(getUserEnrollment(user.id, currCourse.id));
     }
-  ]);
+  }, [courseId, user]);
 
-  const currentModule = lessons[activeLesson];
-  const completedCount = lessons.filter(l => l.completed).length;
-  const progressPercentage = Math.round((completedCount / lessons.length) * 100);
+  if (!course) return <div style={{ padding: '64px', textAlign: 'center' }}>Loading Course...</div>;
+  if (!enrollment) return (
+      <div style={{ padding: '64px', textAlign: 'center' }}>
+          <h2>Access Denied</h2>
+          <p style={{ color: 'var(--text-secondary)', marginBottom: '16px' }}>You haven't purchased this course yet.</p>
+          <Link to={`/course/${course.id}/details`} className="btn btn-primary">Go to Course Details</Link>
+      </div>
+  );
+
+  const currentModule = course.modules[activeLessonIndex];
+  const progressPercentage = enrollment.progress || 0;
 
   // Track student progress securely and accurately
   const handleModuleComplete = () => {
-    setLessons(prev => prev.map(
-      lesson => lesson.id === currentModule.id ? { ...lesson, completed: true } : lesson
-    ));
-    // In a real application, make secure API call to sync Data Integrity tracking.
+      updateProgress(user.id, course.id, activeLessonIndex);
+      setEnrollment(getUserEnrollment(user.id, course.id)); // refresh local state
   };
 
   return (
@@ -53,23 +60,23 @@ const CourseView = () => {
         
         {/* Main Content Area - Renders Specific Module Based on Type */}
         <div className="fade-in">
-          <h1 style={{ fontSize: '2.5rem', marginBottom: '8px' }}>Web Development Masterclass</h1>
+          <h1 style={{ fontSize: '2.5rem', marginBottom: '8px' }}>{course.title}</h1>
           <p style={{ color: 'var(--text-secondary)', marginBottom: '24px' }}>
-             Learn everything you need to know about building robust applications.
+             Module {activeLessonIndex + 1}: {currentModule?.title}
           </p>
           
           {/* Content Module (Video) */}
-          {currentModule.type === 'video' && (
-             <VideoPlayer activeLesson={activeLesson} onComplete={handleModuleComplete} />
+          {currentModule?.type === 'video' && (
+             <VideoPlayer activeLesson={activeLessonIndex} onComplete={handleModuleComplete} />
           )}
 
           {/* Content Module (Document via DocumentViewer) */}
-          {currentModule.type === 'document' && (
+          {currentModule?.type === 'document' && (
              <DocumentViewer moduleData={currentModule} onComplete={handleModuleComplete} />
           )}
 
           {/* Assessment Module */}
-          {currentModule.type === 'quiz' && (
+          {currentModule?.type === 'quiz' && (
              <QuizEngine moduleData={currentModule} onComplete={handleModuleComplete} />
           )}
 
@@ -104,14 +111,16 @@ const CourseView = () => {
           </div>
 
           <div className="lesson-list">
-            {lessons.map((lesson, idx) => (
+            {course.modules.map((lesson, idx) => {
+              const isCompleted = enrollment.completedLessons.includes(idx);
+              return (
               <div 
                 key={idx} 
-                className={`lesson-item ${activeLesson === idx ? 'active' : ''}`}
-                onClick={() => setActiveLesson(idx)}
+                className={`lesson-item ${activeLessonIndex === idx ? 'active' : ''}`}
+                onClick={() => setActiveLessonIndex(idx)}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  {lesson.completed ? (
+                  {isCompleted ? (
                     <CheckCircle size={18} color="var(--success)" />
                   ) : lesson.type === 'video' ? (
                     <PlayCircle size={18} color="var(--text-secondary)" />
@@ -120,13 +129,13 @@ const CourseView = () => {
                   ) : (
                     <FileText size={18} color="var(--text-secondary)" />
                   )}
-                  <span style={{ fontSize: '0.9rem', color: activeLesson === idx ? 'var(--text-primary)' : 'var(--text-secondary)' }}>
+                  <span style={{ fontSize: '0.9rem', color: activeLessonIndex === idx ? 'var(--text-primary)' : 'var(--text-secondary)' }}>
                     {idx + 1}. {lesson.title}
                   </span>
                 </div>
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{lesson.duration}</span>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{lesson.duration || 'Read'}</span>
               </div>
-            ))}
+            )})}
           </div>
         </div>
       </div>
