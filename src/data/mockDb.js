@@ -51,7 +51,9 @@ const generateCourses = () => {
 };
 
 export const initializeDb = () => {
-  if (!localStorage.getItem('courses')) {
+  const existingCourses = localStorage.getItem('courses');
+  // Re-generate database if it is missing or if it has the old 3-course structure
+  if (!existingCourses || JSON.parse(existingCourses).length < 60) {
     const initialCourses = generateCourses();
     localStorage.setItem('courses', JSON.stringify(initialCourses));
   }
