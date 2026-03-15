@@ -1,0 +1,160 @@
+import React, { useState } from 'react';
+import { useAuth } from '../App';
+import { Route, Routes, Link, useNavigate, useLocation } from 'react-router-dom';
+import { BookOpen, UserCircle, Settings, PlusCircle, Video, Play, FileText } from 'lucide-react';
+
+const StudentDashboard = () => {
+  const navigate = useNavigate();
+  return (
+    <div className="fade-in">
+      <h2 style={{ fontSize: '2rem', marginBottom: '8px' }}>My Learning Journey</h2>
+      <p style={{ color: 'var(--text-secondary)', marginBottom: '32px' }}>Pick up where you left off</p>
+
+      <div className="grid grid-cols-3">
+        {[1, 2].map((course) => (
+          <div key={course} className="glass-panel course-card" style={{ padding: '24px' }}>
+             <img 
+               src={`https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&q=80&w=400&h=250&random=${course}`} 
+               alt="Course thumbnail"
+               className="course-image"
+             />
+             <h4 style={{ fontSize: '1.2rem', marginBottom: '8px' }}>React Native Development</h4>
+             <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '16px' }}>
+               Module 3: Navigation and Routing
+             </p>
+             <div style={{ marginBottom: '16px' }}>
+               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '4px' }}>
+                 <span>Progress</span>
+                 <span>{course * 35}%</span>
+               </div>
+               <div className="progress-container">
+                 <div className="progress-bar" style={{ width: `${course * 35}%` }}></div>
+               </div>
+             </div>
+             <button 
+               className="btn btn-primary" 
+               style={{ width: '100%' }}
+               onClick={() => navigate(`/course/${course}`)}
+             >
+               <Play size={18} /> Continue Learning
+             </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const InstructorDashboard = () => {
+  const [activeTab, setActiveTab] = useState('courses');
+
+  return (
+    <div className="fade-in">
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+        <div>
+          <h2 style={{ fontSize: '2rem', marginBottom: '8px' }}>Instructor Hub</h2>
+          <p style={{ color: 'var(--text-secondary)' }}>Manage your courses and content</p>
+        </div>
+        <button className="btn btn-primary">
+          <PlusCircle size={20} /> Create New Course
+        </button>
+      </div>
+
+      <div className="grid grid-cols-2">
+        {[1, 2, 3].map((course) => (
+          <div key={course} className="glass-panel flex-row" style={{ display: 'flex', gap: '20px', alignItems: 'start' }}>
+            <img 
+               src={`https://images.unsplash.com/photo-1542831371-29b0f74f9713?auto=format&fit=crop&q=80&w=200&h=200&random=${course}`} 
+               alt="Course thumbnail"
+               style={{ width: '150px', height: '100px', objectFit: 'cover', borderRadius: '8px' }}
+             />
+             <div style={{ flex: 1 }}>
+               <h4 style={{ fontSize: '1.2rem', marginBottom: '4px' }}>Advanced JavaScript Concepts</h4>
+               <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '12px' }}>
+                 12 Modules • 45 Students Enrolled
+               </p>
+               <div style={{ display: 'flex', gap: '12px' }}>
+                 <button className="btn btn-secondary" style={{ padding: '6px 12px', fontSize: '0.9rem' }}>Edit Course</button>
+                 <button className="btn btn-danger" style={{ padding: '6px 12px', fontSize: '0.9rem' }}>Delete</button>
+               </div>
+             </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const UserProfile = () => {
+  const { user } = useAuth();
+  return (
+    <div className="fade-in glass-panel" style={{ maxWidth: '600px', margin: '0 auto' }}>
+      <h2 style={{ fontSize: '1.8rem', marginBottom: '24px' }}>Profile Settings</h2>
+      <div className="form-group">
+        <label className="form-label">Name</label>
+        <input type="text" className="form-input" defaultValue={user.name} />
+      </div>
+      <div className="form-group">
+        <label className="form-label">Email</label>
+        <input type="email" className="form-input" defaultValue={user.email} />
+      </div>
+      <div className="form-group">
+         <label className="form-label">Role</label>
+         <input type="text" className="form-input" value={user.role} readOnly style={{ opacity: 0.7 }} />
+      </div>
+      <button className="btn btn-primary" style={{ marginTop: '16px' }}>Save Changes</button>
+    </div>
+  );
+};
+
+const Dashboard = () => {
+  const { user } = useAuth();
+  const location = useLocation();
+  const currentPath = location.pathname.split('/').pop();
+
+  return (
+    <div className="dashboard-layout">
+      <aside className="sidebar">
+        <div style={{ padding: '0 24px 24px 24px', borderBottom: '1px solid var(--glass-border)', marginBottom: '24px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'linear-gradient(45deg, var(--primary), var(--accent))', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <span style={{ fontWeight: 'bold' }}>{user.name.charAt(0)}</span>
+            </div>
+            <div>
+              <p style={{ fontWeight: 600 }}>{user.name}</p>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', textTransform: 'capitalize' }}>{user.role}</p>
+            </div>
+          </div>
+        </div>
+
+        <nav>
+           <Link to="/dashboard" className={`sidebar-link ${currentPath === 'dashboard' ? 'active' : ''}`}>
+             <BookOpen size={20} /> My Learning
+           </Link>
+           {user.role === 'instructor' && (
+             <Link to="/dashboard/teaching" className={`sidebar-link ${currentPath === 'teaching' ? 'active' : ''}`}>
+               <Video size={20} /> Instructor Hub
+             </Link>
+           )}
+           <Link to="/dashboard/profile" className={`sidebar-link ${currentPath === 'profile' ? 'active' : ''}`}>
+             <UserCircle size={20} /> Profile
+           </Link>
+           <Link to="/dashboard/settings" className={`sidebar-link ${currentPath === 'settings' ? 'active' : ''}`}>
+             <Settings size={20} /> Settings
+           </Link>
+        </nav>
+      </aside>
+
+      <main className="main-content">
+        <Routes>
+          <Route path="/" element={user.role === 'instructor' ? <InstructorDashboard /> : <StudentDashboard />} />
+          <Route path="/teaching" element={<InstructorDashboard />} />
+          <Route path="/profile" element={<UserProfile />} />
+          <Route path="/settings" element={<div className="glass-panel"><h3>Settings Panel</h3><p className="mt-4" style={{marginTop: '16px'}}>Manage notifications, privacy, etc.</p></div>} />
+        </Routes>
+      </main>
+    </div>
+  );
+};
+
+export default Dashboard;
