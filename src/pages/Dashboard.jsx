@@ -7,6 +7,7 @@ import { BookOpen, UserCircle, Settings, PlusCircle, Video, Play, FileText, Comp
 const StudentDashboard = ({ user }) => {
   const navigate = useNavigate();
   const [myCourses, setMyCourses] = useState([]);
+  const [activeTab, setActiveTab] = useState('enrolled');
 
   useEffect(() => {
      const allCourses = getCourses();
@@ -19,20 +20,38 @@ const StudentDashboard = ({ user }) => {
      setMyCourses(mappedCourses);
   }, [user]);
 
+  const displayedCourses = activeTab === 'purchased' ? myCourses.filter(c => c.price > 0) : myCourses;
+
   return (
     <div className="fade-in">
-      <h2 style={{ fontSize: '2rem', marginBottom: '8px' }}>My Learning Journey</h2>
-      <p style={{ color: 'var(--text-secondary)', marginBottom: '32px' }}>Pick up where you left off</p>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '32px' }}>
+          <div>
+              <h2 style={{ fontSize: '2rem', marginBottom: '8px' }}>My Learning Dashboard</h2>
+              <p style={{ color: 'var(--text-secondary)' }}>Pick up where you left off</p>
+          </div>
+          <div style={{ display: 'flex', gap: '8px' }}>
+              <button className={`btn ${activeTab === 'enrolled' ? 'btn-primary' : 'btn-secondary'}`} onClick={() => setActiveTab('enrolled')}>All Enrolled</button>
+              <button className={`btn ${activeTab === 'purchased' ? 'btn-primary' : 'btn-secondary'}`} onClick={() => setActiveTab('purchased')}>Purchased Courses</button>
+          </div>
+      </div>
 
-      {myCourses.length > 0 ? (
+      {displayedCourses.length > 0 ? (
         <div className="grid grid-cols-3">
-          {myCourses.map((course) => (
+          {displayedCourses.map((course) => (
             <div key={course.id} className="glass-panel course-card" style={{ padding: '24px' }}>
                <img 
                  src={course.thumbnail} 
                  alt="Course thumbnail"
                  className="course-image"
                />
+               <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', flexWrap: 'wrap' }}>
+                   {course.price === 0 ? (
+                       <span className="badge badge-success py-1 inline-block">Free</span>
+                   ) : (
+                       <span className="badge badge-primary py-1 inline-block">Purchased</span>
+                   )}
+                   <span className="badge badge-secondary py-1 inline-block" style={{ background: 'rgba(255,255,255,0.1)' }}>{course.category}</span>
+               </div>
                <h4 style={{ fontSize: '1.2rem', marginBottom: '8px' }}>{course.title}</h4>
                <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '16px' }}>
                  {course.completedCount === course.modules?.length 
@@ -61,7 +80,9 @@ const StudentDashboard = ({ user }) => {
       ) : (
           <div className="glass-panel text-center" style={{ padding: '48px', textAlign: 'center' }}>
               <Compass size={48} color="var(--text-secondary)" style={{ margin: '0 auto 16px auto' }} />
-              <h3 style={{ fontSize: '1.5rem', marginBottom: '8px' }}>No courses enrolled yet</h3>
+              <h3 style={{ fontSize: '1.5rem', marginBottom: '8px' }}>
+                  {activeTab === 'purchased' ? 'No purchased courses found' : 'No courses enrolled yet'}
+              </h3>
               <p style={{ color: 'var(--text-secondary)', marginBottom: '24px' }}>Discover new skills and start learning today.</p>
               <button className="btn btn-primary" onClick={() => navigate('/courses')}>Browse Catalog</button>
           </div>

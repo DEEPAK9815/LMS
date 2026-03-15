@@ -1,46 +1,58 @@
+const CATEGORIES = [
+  'Web Development',
+  'Java Programming',
+  'Python Programming',
+  'Data Structures & Algorithms',
+  'Artificial Intelligence',
+  'Machine Learning',
+  'Cloud Computing',
+  'Database Systems',
+  'Cybersecurity',
+  'Software Testing'
+];
+
+const INSTRUCTORS = [
+  'Sarah Drasner', 'Kent C. Dodds', 'Jose Portilla', 'Angela Yu', 
+  'Colt Steele', 'Andrei Neagoie', 'Maximilian Schwarzmüller', 'Stephen Grider'
+];
+
+const generateCourses = () => {
+  const courses = [];
+  for (let i = 0; i < 60; i++) {
+    const isFree = i < 35; // 35 Free courses
+    const category = CATEGORIES[i % CATEGORIES.length];
+    const instructor = INSTRUCTORS[i % INSTRUCTORS.length];
+    const price = isFree ? 0 : Math.floor(Math.random() * 80) + 19.99;
+    const discount = isFree ? 0 : (Math.random() > 0.5 ? Math.floor(Math.random() * 30) + 10 : 0);
+    
+    // Duration
+    const totalHours = Math.floor(Math.random() * 40) + 5;
+    
+    courses.push({
+      id: `c${i + 1}`,
+      title: `${category} - ${isFree ? 'Basics to Advanced' : 'Masterclass Master Bootcamp'} ${i + 1}`,
+      description: `Comprehensive course on ${category}. Master the core concepts, build real-world projects, and advance your career with expert instruction from ${instructor}.`,
+      instructor: instructor,
+      category: category,
+      price: price,
+      discount: discount,
+      duration: `${totalHours} hours`,
+      thumbnail: `https://images.unsplash.com/photo-${1500000000000 + i * 1000}?auto=format&fit=crop&q=80&w=600&h=400&random=${i}`, // Random reliable unsplash looking pattern
+      modules: [
+        { type: 'video', title: `Introduction to ${category}`, duration: '15:00', videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4' },
+        { type: 'video', title: `Core Fundamentals of ${category}`, duration: '25:00', videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4' },
+        { type: 'document', title: `${category} Cheatsheet & Setup Guide`, downloadable: true },
+        { type: 'video', title: 'Advanced Techniques Part 1', duration: '30:00', videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4' },
+        { type: 'quiz', title: `Module 1 Assessment: ${category}`, duration: '10 mins', question: `Which of the following is essential for ${category}?`, options: ['Consistency', 'Apathy', 'Randomness', 'Inaction'], answer: 0 }
+      ]
+    });
+  }
+  return courses;
+};
+
 export const initializeDb = () => {
   if (!localStorage.getItem('courses')) {
-    const initialCourses = [
-      {
-        id: 'c1',
-        title: 'Full-Stack Web Development',
-        description: 'Master the art of building scalable web apps with modern technologies from frontend to backend.',
-        instructor: 'Sarah Drasner',
-        price: 49.99,
-        discount: 10,
-        thumbnail: 'https://images.unsplash.com/photo-1516321497487-e288fb19713f?auto=format&fit=crop&q=80&w=600&h=400',
-        modules: [
-          { type: 'video', title: 'Introduction to HTML & CSS', duration: '15:00', videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4' },
-          { type: 'document', title: 'CSS Flexbox Guide', downloadable: true },
-          { type: 'video', title: 'JavaScript Basics', duration: '25:00', videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4' },
-        ]
-      },
-      {
-        id: 'c2',
-        title: 'Advanced React patterns',
-        description: 'Take your React skills to the next level by learning advanced patterns, performance optimization, and internals.',
-        instructor: 'Kent C. Dodds',
-        price: 79.99,
-        discount: 0,
-        thumbnail: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&q=80&w=600&h=400',
-        modules: [
-          { type: 'video', title: 'React Performance', duration: '20:00' },
-          { type: 'document', title: 'Hooks Cheatsheet', downloadable: true },
-        ]
-      },
-      {
-        id: 'c3',
-        title: 'Data Science with Python',
-        description: 'Learn data analysis, visualization, and machine learning using Python and popular libraries.',
-        instructor: 'Jose Portilla',
-        price: 89.99,
-        discount: 20,
-        thumbnail: 'https://images.unsplash.com/photo-1509228468518-180dd4864904?auto=format&fit=crop&q=80&w=600&h=400',
-        modules: [
-          { type: 'video', title: 'Intro to Pandas', duration: '30:00' },
-        ]
-      }
-    ];
+    const initialCourses = generateCourses();
     localStorage.setItem('courses', JSON.stringify(initialCourses));
   }
   
