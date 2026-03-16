@@ -38,13 +38,31 @@ const generateCourses = () => {
         discount: discount,
         duration: `${totalHours} hours`,
         thumbnail: `https://images.unsplash.com/photo-${1500000000000 + i * 1000}?auto=format&fit=crop&q=80&w=600&h=400&random=${i}`, // Random reliable unsplash looking pattern
-        modules: [
-          { type: 'video', title: `Introduction to ${category}`, duration: '15:00', videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' },
-          { type: 'video', title: `Setup and Installation`, duration: '25:00', videoUrl: 'https://www.youtube.com/watch?v=M7FIvfx5J10' },
-          { type: 'document', title: `${category} Cheatsheet & Setup Guide`, downloadable: true },
-          { type: 'video', title: 'Core Variables and Data Types', duration: '30:00', videoUrl: 'https://www.youtube.com/watch?v=kJQP7kiw5Fk' },
-          { type: 'video', title: 'Object Oriented Programming (OOP)', duration: '45:00', videoUrl: 'https://www.youtube.com/watch?v=JGwWNGJdvx8' },
-          { type: 'quiz', title: `Module Assessment: ${category}`, duration: '10 mins', question: `Which of the following is essential for ${category}?`, options: ['Consistency', 'Apathy', 'Randomness', 'Inaction'], answer: 0 }
+        sections: [
+          {
+            id: 's0',
+            title: 'Basics',
+            lessons: [
+              { id: 's0l0', type: 'video', title: `Introduction to ${category}`, duration: '15:00', videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' },
+              { id: 's0l1', type: 'video', title: `Setup and Installation`, duration: '25:00', videoUrl: 'https://www.youtube.com/watch?v=gT1oI_zep2s' }
+            ]
+          },
+          {
+            id: 's1',
+            title: 'Variables',
+            lessons: [
+              { id: 's1l0', type: 'document', title: `${category} Cheatsheet & Setup Guide`, downloadable: true, duration: '5 mins' },
+              { id: 's1l1', type: 'video', title: 'Core Variables and Data Types', duration: '30:00', videoUrl: 'https://www.youtube.com/watch?v=kJQP7kiw5Fk' }
+            ]
+          },
+          {
+            id: 's2',
+            title: 'OOP',
+            lessons: [
+              { id: 's2l0', type: 'video', title: 'Object Oriented Programming', duration: '45:00', videoUrl: 'https://www.youtube.com/watch?v=pTB0EiLXUC8' },
+              { id: 's2l1', type: 'quiz', title: `Module Assessment: ${category}`, duration: '10 mins', question: `Which of the following is essential for ${category}?`, options: ['Consistency', 'Apathy', 'Randomness', 'Inaction'], answer: 0 }
+            ]
+          }
         ]
       });
   }
@@ -60,7 +78,7 @@ export const initializeDb = () => {
   }
   
   if (!localStorage.getItem('enrollments')) {
-    localStorage.setItem('enrollments', JSON.stringify([])); // { userId, courseId, progress: 0, completedLessons: [] }
+    localStorage.setItem('enrollments', JSON.stringify([])); // { userId, courseId, progress: 0, completedLessons: [], enrollmentDate, lastWatchedLesson }
   }
 };
 
@@ -79,22 +97,37 @@ export const enrollUser = (userId, courseId) => {
   const enrollments = getEnrollments();
   const existing = enrollments.find(e => e.userId === userId && e.courseId === courseId);
   if (!existing) {
-    enrollments.push({ userId, courseId, progress: 0, completedLessons: [] });
+    enrollments.push({ 
+        userId, 
+        courseId, 
+        progress: 0, 
+        completedLessons: [], 
+        enrollmentDate: new Date().toISOString(),
+        lastWatchedLesson: null
+    });
     saveEnrollments(enrollments);
   }
 };
 
-export const updateProgress = (userId, courseId, lessonIndex) => {
+export const updateProgress = (userId, courseId, lessonId) => {
     const enrollments = getEnrollments();
     const existing = enrollments.find(e => e.userId === userId && e.courseId === courseId);
-    if (existing && !existing.completedLessons.includes(lessonIndex)) {
-        existing.completedLessons.push(lessonIndex);
-        
-        // update progress
-        const course = getCourses().find(c => c.id === courseId);
-        if(course && course.modules.length > 0) {
-            existing.progress = Math.round((existing.completedLessons.length / course.modules.length) * 100);
+    
+    if (existing) {
+        if (!existing.completedLessons.includes(lessonId)) {
+            existing.completedLessons.push(lessonId);
+            
+            // update progress
+            const course = getCourses().find(c => c.id === courseId);
+            if(course && course.sections) {
+                let totalLessons = 0;
+                course.sections.forEach(s => totalLessons += s.lessons.length);
+                existing.progress = Math.round((existing.completedLessons.length / totalLessons) * 100);
+            }
         }
+        
+        // Track last watched lesson securely per student flow
+        existing.lastWatchedLesson = lessonId;
         saveEnrollments(enrollments);
     }
 }

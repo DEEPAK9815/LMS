@@ -121,7 +121,7 @@ const Courses = () => {
                 className="btn btn-primary" 
                 onClick={() => navigate(`/course/${course.id}/details`)}
               >
-                View Details
+                Enroll
               </button>
             </div>
           </div>

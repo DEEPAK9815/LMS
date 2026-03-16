@@ -79,20 +79,28 @@ const CourseDetails = () => {
 
            <h3 style={{ fontSize: '1.8rem', marginBottom: '24px' }}>Course Syllabus</h3>
            <div className="glass-panel">
-               {course.modules.length > 0 ? course.modules.map((m, idx) => (
-                  <div key={idx} style={{ 
-                      padding: '16px', borderBottom: idx !== course.modules.length - 1 ? '1px solid var(--glass-border)' : 'none',
-                      display: 'flex', alignItems: 'center', justifyContent: 'space-between'
-                    }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                         {m.type === 'video' ? <PlayCircle color="var(--primary)" size={18} /> : <FileText color="var(--accent)" size={18} />}
-                         <p style={{ fontWeight: 500 }}>Module {idx + 1}: {m.title}</p>
-                      </div>
-                      <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                          {m.type === 'video' ? m.duration : 'Reading / PDF'}
-                      </span>
+               {course.sections && course.sections.length > 0 ? course.sections.map((section, sidx) => (
+                  <div key={sidx} style={{ padding: '16px', borderBottom: sidx !== course.sections.length - 1 ? '1px solid var(--glass-border)' : 'none' }}>
+                      <h4 style={{ fontSize: '1.2rem', marginBottom: '16px', color: 'var(--text-primary)' }}>Section {sidx + 1}: {section.title}</h4>
+                      {section.lessons.map((m, idx) => (
+                          <div key={idx} style={{ 
+                               padding: '12px 16px', 
+                               borderRadius: '8px',
+                               background: 'rgba(255,255,255,0.02)',
+                               marginBottom: idx !== section.lessons.length - 1 ? '8px' : '0',
+                               display: 'flex', alignItems: 'center', justifyContent: 'space-between'
+                             }}>
+                               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                  {m.type === 'video' ? <PlayCircle color="var(--primary)" size={18} /> : <FileText color="var(--accent)" size={18} />}
+                                  <p style={{ fontWeight: 500 }}>{m.title}</p>
+                               </div>
+                               <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                                   {m.type === 'video' ? m.duration : (m.duration || 'Reading / PDF')}
+                               </span>
+                           </div>
+                      ))}
                   </div>
-               )) : <p>No modules available</p>}
+               )) : <p>No sections available</p>}
            </div>
 
            {/* Discovery / Related Courses */}

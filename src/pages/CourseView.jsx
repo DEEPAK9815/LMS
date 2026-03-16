@@ -29,16 +29,28 @@ const CourseView = () => {
         const enrolDb = getUserEnrollment(user.id, currCourse.id);
         setEnrollment(enrolDb);
         if (enrolDb && enrolDb.completedLessons.length > 0) {
-            // Find first uncompleted
-            let firstUncompleted = 0;
-            while (firstUncompleted < currCourse.modules.length && enrolDb.completedLessons.includes(firstUncompleted)) {
-               firstUncompleted++;
+            // Build flat lessons to find resume index
+            const flatLessons = [];
+            if (currCourse.sections) {
+                currCourse.sections.forEach(s => s.lessons.forEach(l => flatLessons.push(l)));
             }
-            if (firstUncompleted < currCourse.modules.length) {
-               setActiveLessonIndex(firstUncompleted);
+            
+            let resumeIndex = 0;
+            if (enrolDb.lastWatchedLesson) {
+                 resumeIndex = flatLessons.findIndex(l => l.id === enrolDb.lastWatchedLesson);
+                 if (resumeIndex === -1) resumeIndex = 0;
             } else {
-               setActiveLessonIndex(currCourse.modules.length - 1); // all completed
+                 let firstUncompleted = 0;
+                 while (firstUncompleted < flatLessons.length && enrolDb.completedLessons.includes(flatLessons[firstUncompleted].id)) {
+                    firstUncompleted++;
+                 }
+                 if (firstUncompleted < flatLessons.length) {
+                    resumeIndex = firstUncompleted;
+                 } else {
+                    resumeIndex = flatLessons.length - 1; // all completed
+                 }
             }
+            setActiveLessonIndex(resumeIndex);
         }
     }
   }, [courseId, user]);
@@ -52,16 +64,21 @@ const CourseView = () => {
       </div>
   );
 
-  const currentModule = course.modules[activeLessonIndex];
+  const flatLessons = [];
+  if (course.sections) {
+      course.sections.forEach(s => s.lessons.forEach(l => flatLessons.push(l)));
+  }
+  const currentModule = flatLessons[activeLessonIndex];
   const progressPercentage = enrollment.progress || 0;
 
   // Track student progress securely and accurately
   const handleModuleComplete = () => {
-      updateProgress(user.id, course.id, activeLessonIndex);
+      if (!currentModule) return;
+      updateProgress(user.id, course.id, currentModule.id);
       setEnrollment(getUserEnrollment(user.id, course.id)); // refresh local state
       
       // Auto move to next lesson after marking as completed
-      if (activeLessonIndex < course.modules.length - 1) {
+      if (activeLessonIndex < flatLessons.length - 1) {
           setActiveLessonIndex(activeLessonIndex + 1);
       }
   };
@@ -110,9 +127,9 @@ const CourseView = () => {
             </button>
             <button 
               className="btn btn-primary" 
-              onClick={() => setActiveLessonIndex(Math.min(course.modules.length - 1, activeLessonIndex + 1))}
-              disabled={activeLessonIndex === course.modules.length - 1}
-              style={{ padding: '12px 24px', opacity: activeLessonIndex === course.modules.length - 1 ? 0.5 : 1, cursor: activeLessonIndex === course.modules.length - 1 ? 'not-allowed' : 'pointer' }}
+              onClick={() => setActiveLessonIndex(Math.min(flatLessons.length - 1, activeLessonIndex + 1))}
+              disabled={activeLessonIndex === flatLessons.length - 1}
+              style={{ padding: '12px 24px', opacity: activeLessonIndex === flatLessons.length - 1 ? 0.5 : 1, cursor: activeLessonIndex === flatLessons.length - 1 ? 'not-allowed' : 'pointer' }}
             >
               Next Lesson
             </button>
@@ -149,31 +166,41 @@ const CourseView = () => {
           </div>
 
           <div className="lesson-list">
-            {course.modules.map((lesson, idx) => {
-              const isCompleted = enrollment.completedLessons.includes(idx);
-              return (
-              <div 
-                key={idx} 
-                className={`lesson-item ${activeLessonIndex === idx ? 'active' : ''}`}
-                onClick={() => setActiveLessonIndex(idx)}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  {isCompleted ? (
-                    <CheckCircle size={18} color="var(--success)" />
-                  ) : lesson.type === 'video' ? (
-                    <PlayCircle size={18} color="var(--text-secondary)" />
-                  ) : lesson.type === 'quiz' ? (
-                    <HelpCircle size={18} color="var(--warning)" />
-                  ) : (
-                    <FileText size={18} color="var(--text-secondary)" />
-                  )}
-                  <span style={{ fontSize: '0.9rem', color: activeLessonIndex === idx ? 'var(--text-primary)' : 'var(--text-secondary)' }}>
-                    {idx + 1}. {lesson.title}
-                  </span>
-                </div>
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{lesson.duration || 'Read'}</span>
+            {course.sections && course.sections.map((section, sidx) => (
+              <div key={sidx} style={{ marginBottom: '16px' }}>
+                 <h4 style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' }}>
+                    {section.title}
+                 </h4>
+                 {section.lessons.map((lesson, localIdx) => {
+                    const flatIdx = flatLessons.findIndex(l => l.id === lesson.id);
+                    const isCompleted = enrollment.completedLessons.includes(lesson.id);
+                    const isActive = activeLessonIndex === flatIdx;
+                    return (
+                        <div 
+                          key={lesson.id} 
+                          className={`lesson-item ${isActive ? 'active' : ''}`}
+                          onClick={() => setActiveLessonIndex(flatIdx)}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            {isCompleted ? (
+                              <CheckCircle size={18} color="var(--success)" />
+                            ) : lesson.type === 'video' ? (
+                              <PlayCircle size={18} color="var(--text-secondary)" />
+                            ) : lesson.type === 'quiz' ? (
+                              <HelpCircle size={18} color="var(--warning)" />
+                            ) : (
+                              <FileText size={18} color="var(--text-secondary)" />
+                            )}
+                            <span style={{ fontSize: '0.9rem', color: isActive ? 'var(--text-primary)' : 'var(--text-secondary)' }}>
+                              {lesson.title}
+                            </span>
+                          </div>
+                          <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{lesson.duration || 'Read'}</span>
+                        </div>
+                    );
+                 })}
               </div>
-            )})}
+            ))}
           </div>
         </div>
       </div>
