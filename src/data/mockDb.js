@@ -43,8 +43,8 @@ const generateCourses = () => {
             id: 's0',
             title: 'Basics',
             lessons: [
-              { id: 's0l0', type: 'video', title: `Introduction to ${category}`, duration: '15:00', videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' },
-              { id: 's0l1', type: 'video', title: `Setup and Installation`, duration: '25:00', videoUrl: 'https://www.youtube.com/watch?v=gT1oI_zep2s' }
+              { id: 's0l0', type: 'video', title: `Introduction to ${category}`, duration: '15:00', videoUrl: 'https://www.youtube.com/watch?v=O5nskjZ_GoI' }, // CrashCourse CS
+              { id: 's0l1', type: 'video', title: `Setup and Installation`, duration: '25:00', videoUrl: 'https://www.youtube.com/watch?v=WPqXP_kLzpo' } // VSCode Setup
             ]
           },
           {
@@ -52,14 +52,14 @@ const generateCourses = () => {
             title: 'Variables',
             lessons: [
               { id: 's1l0', type: 'document', title: `${category} Cheatsheet & Setup Guide`, downloadable: true, duration: '5 mins' },
-              { id: 's1l1', type: 'video', title: 'Core Variables and Data Types', duration: '30:00', videoUrl: 'https://www.youtube.com/watch?v=kJQP7kiw5Fk' }
+              { id: 's1l1', type: 'video', title: 'Core Variables and Data Types', duration: '30:00', videoUrl: 'https://www.youtube.com/watch?v=PkZNo7MFOUg' } // freeCodeCamp Variables/Basics
             ]
           },
           {
             id: 's2',
             title: 'OOP',
             lessons: [
-              { id: 's2l0', type: 'video', title: 'Object Oriented Programming', duration: '45:00', videoUrl: 'https://www.youtube.com/watch?v=pTB0EiLXUC8' },
+              { id: 's2l0', type: 'video', title: 'Object Oriented Programming', duration: '45:00', videoUrl: 'https://www.youtube.com/watch?v=PFmuCDHHpwk' }, // Mosh OOP
               { id: 's2l1', type: 'quiz', title: `Module Assessment: ${category}`, duration: '10 mins', question: `Which of the following is essential for ${category}?`, options: ['Consistency', 'Apathy', 'Randomness', 'Inaction'], answer: 0 }
             ]
           }
