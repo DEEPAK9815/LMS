@@ -113,7 +113,7 @@ const InstructorDashboard = () => {
         {[1, 2, 3].map((course) => (
           <div key={course} className="glass-panel flex-row" style={{ display: 'flex', gap: '20px', alignItems: 'start' }}>
             <img 
-               src={`https://images.unsplash.com/photo-1542831371-29b0f74f9713?auto=format&fit=crop&q=80&w=200&h=200&random=${course}`} 
+               src={`https://picsum.photos/seed/instructor_${course}/200/200`} 
                alt="Course thumbnail"
                style={{ width: '150px', height: '100px', objectFit: 'cover', borderRadius: '8px' }}
              />

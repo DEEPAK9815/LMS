@@ -131,7 +131,7 @@ const CourseDetails = () => {
                 <div className="grid grid-cols-2">
                    {[1, 2].map(v => (
                        <div key={v} className="glass-panel" style={{ padding: '0', overflow: 'hidden' }}>
-                          <img src={`https://images.unsplash.com/photo-${1500000000000 + v * 999}?auto=format&fit=crop&q=80&w=400&h=200`} style={{ width: '100%', height: '150px', objectFit: 'cover' }} />
+                          <img src={`https://picsum.photos/seed/related_${course.id}_${v}/400/200`} style={{ width: '100%', height: '150px', objectFit: 'cover' }} />
                           <div style={{ padding: '16px' }}>
                               <h4 style={{ fontSize: '1rem', marginBottom: '4px' }}>{course.category} Crash Course {v}</h4>
                               <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Supplemental Video</p>

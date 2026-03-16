@@ -37,7 +37,7 @@ const generateCourses = () => {
         price: price,
         discount: discount,
         duration: `${totalHours} hours`,
-        thumbnail: `https://images.unsplash.com/photo-${1500000000000 + i * 1000}?auto=format&fit=crop&q=80&w=600&h=400&random=${i}`, // Random reliable unsplash looking pattern
+        thumbnail: `https://picsum.photos/seed/course_${i + 1}/600/400`,
         sections: [
           {
             id: 's0',
