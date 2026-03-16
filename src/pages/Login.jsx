@@ -37,12 +37,36 @@ const Login = () => {
 
     const userRole = formData.email.includes('admin') ? 'admin' : formData.role;
     
-    const mockUser = {
-      id: Math.floor(Math.random() * 1000),
-      name: isRegister ? formData.name : formData.email.split('@')[0],
-      email: formData.email,
-      role: userRole
-    };
+    // Persistent user simulation to track course progress across logins
+    let storedUsers = JSON.parse(localStorage.getItem('users') || '[]');
+    let userRecord = storedUsers.find(u => u.email === formData.email);
+
+    if (isRegister) {
+        if (!userRecord) {
+            userRecord = {
+                id: 'u_' + Date.now() + Math.floor(Math.random()*1000),
+                name: formData.name,
+                email: formData.email,
+                role: userRole
+            };
+            storedUsers.push(userRecord);
+            localStorage.setItem('users', JSON.stringify(storedUsers));
+        }
+    } else {
+        if (!userRecord) {
+            // For presentation ease, auto-create bound ID if they bypass registration
+            userRecord = {
+                id: 'u_' + formData.email, 
+                name: formData.email.split('@')[0],
+                email: formData.email,
+                role: userRole
+            };
+            storedUsers.push(userRecord);
+            localStorage.setItem('users', JSON.stringify(storedUsers));
+        }
+    }
+    
+    const mockUser = userRecord;
     
     // Simulate issuing JWT for authorized Session
     const mockJWT = generateSecureToken(mockUser);
