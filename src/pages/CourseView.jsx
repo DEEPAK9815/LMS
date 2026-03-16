@@ -26,7 +26,20 @@ const CourseView = () => {
     const currCourse = allCourses.find(c => c.id === courseId);
     setCourse(currCourse);
     if(currCourse && user) {
-        setEnrollment(getUserEnrollment(user.id, currCourse.id));
+        const enrolDb = getUserEnrollment(user.id, currCourse.id);
+        setEnrollment(enrolDb);
+        if (enrolDb && enrolDb.completedLessons.length > 0) {
+            // Find first uncompleted
+            let firstUncompleted = 0;
+            while (firstUncompleted < currCourse.modules.length && enrolDb.completedLessons.includes(firstUncompleted)) {
+               firstUncompleted++;
+            }
+            if (firstUncompleted < currCourse.modules.length) {
+               setActiveLessonIndex(firstUncompleted);
+            } else {
+               setActiveLessonIndex(currCourse.modules.length - 1); // all completed
+            }
+        }
     }
   }, [courseId, user]);
 
@@ -46,6 +59,11 @@ const CourseView = () => {
   const handleModuleComplete = () => {
       updateProgress(user.id, course.id, activeLessonIndex);
       setEnrollment(getUserEnrollment(user.id, course.id)); // refresh local state
+      
+      // Auto move to next lesson after marking as completed
+      if (activeLessonIndex < course.modules.length - 1) {
+          setActiveLessonIndex(activeLessonIndex + 1);
+      }
   };
 
   return (
@@ -67,7 +85,7 @@ const CourseView = () => {
           
           {/* Content Module (Video) */}
           {currentModule?.type === 'video' && (
-             <VideoPlayer activeLesson={activeLessonIndex} onComplete={handleModuleComplete} />
+             <VideoPlayer activeLesson={activeLessonIndex} onComplete={handleModuleComplete} videoUrl={currentModule?.videoUrl} />
           )}
 
           {/* Content Module (Document via DocumentViewer) */}
@@ -79,6 +97,26 @@ const CourseView = () => {
           {currentModule?.type === 'quiz' && (
              <QuizEngine moduleData={currentModule} onComplete={handleModuleComplete} />
           )}
+
+          {/* Navigation Controls */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '32px' }}>
+            <button 
+              className="btn btn-secondary" 
+              onClick={() => setActiveLessonIndex(Math.max(0, activeLessonIndex - 1))}
+              disabled={activeLessonIndex === 0}
+              style={{ padding: '12px 24px', opacity: activeLessonIndex === 0 ? 0.5 : 1, cursor: activeLessonIndex === 0 ? 'not-allowed' : 'pointer' }}
+            >
+              Previous Lesson
+            </button>
+            <button 
+              className="btn btn-primary" 
+              onClick={() => setActiveLessonIndex(Math.min(course.modules.length - 1, activeLessonIndex + 1))}
+              disabled={activeLessonIndex === course.modules.length - 1}
+              style={{ padding: '12px 24px', opacity: activeLessonIndex === course.modules.length - 1 ? 0.5 : 1, cursor: activeLessonIndex === course.modules.length - 1 ? 'not-allowed' : 'pointer' }}
+            >
+              Next Lesson
+            </button>
+          </div>
 
           <div style={{ marginTop: '32px' }}>
             <h3 style={{ fontSize: '1.5rem', marginBottom: '16px' }}>Discussion Community</h3>

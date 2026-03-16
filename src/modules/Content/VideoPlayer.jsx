@@ -1,43 +1,61 @@
 import React from 'react';
-import { PlayCircle } from 'lucide-react';
+import { PlayCircle, CheckCircle } from 'lucide-react';
 
 /**
  * Content Module - Video Player
  * High performance video rendering wrapper
  */
-const VideoPlayer = ({ activeLesson, onComplete }) => {
+const VideoPlayer = ({ activeLesson, onComplete, videoUrl }) => {
+  // Extract YouTube ID from URL if provided, otherwise fallback to a default video
+  let youtubeId = 'dQw4w9WgXcQ'; // Default placeholder video
+  
+  if (videoUrl) {
+    // Handle standard watch URLs and embed URLs
+    try {
+      if (videoUrl.includes('youtube.com/embed/')) {
+        youtubeId = videoUrl.split('youtube.com/embed/')[1].split('?')[0];
+      } else if (videoUrl.includes('youtube.com/watch')) {
+        const urlParams = new URLSearchParams(new URL(videoUrl).search);
+        youtubeId = urlParams.get('v') || youtubeId;
+      } else if (videoUrl.includes('youtu.be/')) {
+        youtubeId = videoUrl.split('youtu.be/')[1].split('?')[0];
+      }
+    } catch (e) {
+      console.error("Failed to parse YouTube URL:", videoUrl);
+    }
+  }
+
+  const embedUrl = `https://www.youtube.com/embed/${youtubeId}?rel=0`;
+
   return (
-    <div className="video-wrapper fade-in">
-      <img
-        src={`https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&q=80&w=1280&h=720&random=${activeLesson}`}
-        alt="Video Placeholder"
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          objectFit: 'cover'
-        }}
-        loading="lazy" /* Performance optimization */
-      />
-      <div
-        style={{
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          background: 'rgba(0,0,0,0.5)',
-          borderRadius: '50%',
-          padding: '20px',
-          cursor: 'pointer'
-        }}
-        onClick={() => {
-          // Simulate completing video watch
-          if (onComplete) onComplete();
-        }}
-      >
-        <PlayCircle size={64} color="var(--primary)" />
+    <div className="video-wrapper fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <div style={{ position: 'relative', width: '100%', paddingBottom: '56.25%', borderRadius: '12px', overflow: 'hidden' }}>
+        <iframe
+          src={embedUrl}
+          title="YouTube video player"
+          frameBorder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%'
+          }}
+        ></iframe>
+      </div>
+      
+      {/* Mark complete button for LMS progress tracking */}
+      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <button 
+          className="btn btn-success" 
+          onClick={() => { if (onComplete) onComplete(); }}
+          style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 24px' }}
+        >
+          <CheckCircle size={20} />
+          Mark Lesson Complete
+        </button>
       </div>
     </div>
   );
