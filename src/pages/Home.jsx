@@ -77,7 +77,7 @@ const Home = () => {
                       <span style={{ fontWeight: 600, color: 'var(--primary)' }}>${(course.price - course.price * (course.discount||0)/100).toFixed(2)}</span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
-                    <BookOpen size={16} /> {course.modules.length} Lessons
+                    <BookOpen size={16} /> {course.sections ? course.sections.reduce((acc, s) => acc + (s.lessons?.length || 0), 0) : 0} Lessons
                   </div>
                 </div>
               </div>

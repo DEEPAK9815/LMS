@@ -54,9 +54,12 @@ const StudentDashboard = ({ user }) => {
                </div>
                <h4 style={{ fontSize: '1.2rem', marginBottom: '8px' }}>{course.title}</h4>
                <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '16px' }}>
-                 {course.completedCount === course.modules?.length 
-                    ? 'Course Completed!' 
-                    : `Completed ${course.completedCount} of ${course.modules?.length} Lessons`}
+                 {(() => {
+                    const totalLessons = course.sections ? course.sections.reduce((acc, s) => acc + (s.lessons?.length || 0), 0) : 0;
+                    return course.completedCount === totalLessons && totalLessons > 0
+                        ? 'Course Completed!' 
+                        : `Completed ${course.completedCount} of ${totalLessons} Lessons`;
+                 })()}
                </p>
                <div style={{ marginBottom: '16px' }}>
                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '4px' }}>

@@ -13,7 +13,7 @@ const AdminDashboard = () => {
   const [isAdding, setIsAdding] = useState(false);
   
   const [courseForm, setCourseForm] = useState({
-      id: '', title: '', description: '', instructor: user.name, price: 0, discount: 0, thumbnail: '', modules: []
+      id: '', title: '', description: '', instructor: user.name, price: 0, discount: 0, thumbnail: '', sections: []
   });
 
   useEffect(() => {
@@ -150,11 +150,11 @@ const AdminDashboard = () => {
                           <input type="url" className="form-input" required placeholder="https://..." value={courseForm.thumbnail} onChange={e => setCourseForm({...courseForm, thumbnail: e.target.value})} />
                       </div>
                       <div className="form-group" style={{ gridColumn: '1 / -1' }}>
-                          <label className="form-label">Modules Config JSON (Mock upload metadata)</label>
-                          <textarea className="form-input" rows="4" placeholder='[{"type":"video","title":"L1","duration":"10:00"}]' 
-                             value={JSON.stringify(courseForm.modules)} 
+                          <label className="form-label">Sections Config JSON (Mock upload metadata)</label>
+                          <textarea className="form-input" rows="4" placeholder='[{"title":"Basics", "lessons": [{"type":"video","title":"L1","duration":"10:00"}]}]' 
+                             value={JSON.stringify(courseForm.sections)} 
                              onChange={e => {
-                                 try { setCourseForm({...courseForm, modules: JSON.parse(e.target.value)}) } catch(e){}
+                                 try { setCourseForm({...courseForm, sections: JSON.parse(e.target.value)}) } catch(e){}
                              }}
                           ></textarea>
                       </div>
@@ -169,7 +169,7 @@ const AdminDashboard = () => {
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '24px' }}>
                       <h3 style={{ fontSize: '1.5rem' }}>Course Catalog Management</h3>
                       <button className="btn btn-primary" onClick={() => {
-                          setCourseForm({ id: '', title: '', description: '', instructor: user.name, price: 0, discount: 0, thumbnail: '', modules: [] });
+                          setCourseForm({ id: '', title: '', description: '', instructor: user.name, price: 0, discount: 0, thumbnail: '', sections: [] });
                           setIsAdding(true);
                       }}>+ Add Course</button>
                   </div>
