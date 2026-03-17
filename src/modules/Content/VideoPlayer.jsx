@@ -28,30 +28,23 @@ const VideoPlayer = ({ activeLesson, onComplete, videoUrl }) => {
   const embedUrl = `https://www.youtube.com/embed/${youtubeId}?rel=0`;
 
   return (
-    <div className="video-wrapper fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-      <div style={{ position: 'relative', width: '100%', paddingBottom: '56.25%', borderRadius: '12px', overflow: 'hidden' }}>
+    <div className="fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      <div className="video-wrapper" style={{ borderRadius: '12px', overflow: 'hidden' }}>
         <iframe
           src={embedUrl}
           title="YouTube video player"
           frameBorder="0"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowFullScreen
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%'
-          }}
         ></iframe>
       </div>
       
       {/* Mark complete button for LMS progress tracking */}
-      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '10px' }}>
         <button 
           className="btn btn-success" 
           onClick={() => { if (onComplete) onComplete(); }}
-          style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 24px' }}
+          style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 24px', borderRadius: '12px' }}
         >
           <CheckCircle size={20} />
           Mark Lesson Complete

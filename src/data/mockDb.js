@@ -122,7 +122,9 @@ export const updateProgress = (userId, courseId, lessonId) => {
             if(course && course.sections) {
                 let totalLessons = 0;
                 course.sections.forEach(s => totalLessons += s.lessons.length);
-                existing.progress = Math.round((existing.completedLessons.length / totalLessons) * 100);
+                existing.progress = totalLessons > 0 
+                  ? Math.round((existing.completedLessons.length / totalLessons) * 100)
+                  : 0;
             }
         }
         
